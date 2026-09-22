@@ -1,0 +1,16 @@
+body {
+    font-family: sans-serif;
+    background: #121212;
+    color: #fff;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+header {
+    margin-bottom: 20px;
+}

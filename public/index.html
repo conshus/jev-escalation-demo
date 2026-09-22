@@ -1,12 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Starter</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help Desk Support</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://video.standard.vonage.com/v2/js/opentok.min.js"></script>
 </head>
 <body>
-    <h1>Starter</h1>
-    <script type="module" src="app.js"></script>
+
+  <!-- Chat UI -->
+  <main class="chat-container">
+    <header class="chat-header">
+      <h2>Support Assistant</h2>
+    </header>
+    
+    <section id="chat-window" class="chat-window" aria-live="polite">
+      <div class="message bot">Hello! How can I help you today?</div>
+    </section>
+
+    <form id="chat-form" class="chat-form">
+      <input type="text" id="chat-input" placeholder="Type your message..." required autocomplete="off" />
+      <button type="submit">Send</button>
+    </form>
+  </main>
+
+  <!-- Video Escalation Modal -->
+  <dialog id="video-modal">
+    <header class="modal-header">
+      <h2 id="modal-title">Connecting to a Live Agent...</h2>
+      <button id="customer-end-call" class="btn-danger" style="display: none;">End Call</button>
+    </header>
+    <div class="video-layout">
+      <div id="subscriber-container" class="video-box"></div>
+      <div id="publisher-container" class="video-box"></div>
+    </div>
+  </dialog>
+
+  <script src="customer.js"></script>
 </body>
 </html>

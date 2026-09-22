@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://video.standard.vonage.com/v2/js/opentok.min.js"></script>
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <!-- Active Call Area -->
+    <main class="dashboard-main">
+      <header>
+        <h2>Active Support Call</h2>
+        <button id="agent-end-call" class="btn-danger" style="display: none;">End Call</button>
+      </header>
+      <section class="video-layout">
+        <div id="subscriber-container" class="video-box">Waiting for customer stream...</div>
+        <div id="publisher-container" class="video-box">Your camera</div>
+      </section>
+    </main>
+
+    <!-- Queue & Escalations -->
+    <aside class="dashboard-sidebar">
+      <h3>Escalation Queue</h3>
+      <hr style="margin: 1rem 0; border: none; border-top: 1px solid var(--border-color);">
+      <div id="dashboard-alerts" aria-live="polite">
+        <!-- JS injects escalation cards here -->
+      </div>
+    </aside>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

@@ -119,12 +119,13 @@ app.post('/api/evaluate', async (req, res) => {
     console.log('evaluation: ', evaluation);
 
     const userSentiment = evaluation.answers.sentiment.choice;
+    const userSentimentConfidence = evaluation.answers.sentiment.confidence;
     const frustrationScore = evaluation.answers.frustrationLevel.score;
     const frustrationLevel = evaluation.answers.frustrationLevel.legend[Math.round(evaluation.answers.frustrationLevel.score)];
     const wantsHuman = evaluation.answers.explicitEscalation.noul > 0.8; // Returns true/false based on probability
 
     // 2. The Escalation Threshold
-    if (frustrationScore >= 2 || ['frustrated', 'angry'].includes(userSentiment) || wantsHuman) {
+    if (frustrationScore >= 2 || (['frustrated', 'angry'].includes(userSentiment) && userSentimentConfidence > 0.8) || wantsHuman) {
       const dispatchSessionId = await getDispatchSessionId();
 
       // Fire the signal into the Global Employee Dispatch Session

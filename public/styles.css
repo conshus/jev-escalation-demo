@@ -231,3 +231,8 @@ dialog::backdrop {
   margin-top: 1rem;
   width: 100%;
 }
+
+#employee-dashboard-link {
+  position: absolute;
+  top: 20px;
+}

@@ -60,7 +60,7 @@ function removeEscalationCard(customerId) {
 // Ensure acceptEscalation is available globally for the inline onclick handler
 window.acceptEscalation = async function (customerId, customerSessionId) {
     console.log('customerSessionId: ', customerSessionId);
-    // 1. Tell backend to send 'signal:claimed'
+    // Tell backend to send 'signal:claimed'
     await fetch('/api/escalate/claim', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -69,14 +69,14 @@ window.acceptEscalation = async function (customerId, customerSessionId) {
 
     removeEscalationCard(customerId);
 
-    // 2. Get a fresh publisher token for this specific customer session
+    // Get a fresh publisher token for this specific customer session
     const { token } = await fetch('/api/auth/customer-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId: customerSessionId })
     }).then(r => r.json());
 
-    // 3. Connect to the Customer Session
+    // Connect to the Customer Session
     customerSession = OT.initSession(applicationId, customerSessionId);
 
     customerSession.on('streamCreated', (event) => {

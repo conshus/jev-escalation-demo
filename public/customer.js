@@ -1,4 +1,3 @@
-// Local state (In a real app, fetch these from your backend on page load)
 let applicationId;
 let sessionId;
 let token;
@@ -60,7 +59,7 @@ chatForm.addEventListener('submit', async (e) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         messages: messageHistory,
-        customerId: 'user_' + Math.floor(Math.random() * 10000), // Dummy ID
+        customerId: 'user_' + Math.floor(Math.random() * 10000), // Random ID
         sessionId
       })
     });
@@ -129,7 +128,7 @@ function transitionToVideoCall() {
   });
 }
 
-// Dummy function to simulate WebLLM/Prompt API/AI Agent
+// Mock function to simulate WebLLM/Prompt API/AI Agent
 async function mockWebLLMResponse(text) {
   return new Promise(resolve => {
     setTimeout(() => {

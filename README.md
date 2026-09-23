@@ -21,3 +21,12 @@ Once the environment loads, the setup script will run automatically to configure
 The setup script will create the Vonage Application needed for the Video chat. It will ask for API Key and API Secret which can be found in the [Vonage Dashboard](https://dashboard.vonage.com)
 
 The script will also ask for your TypeSafe AI API Key. You can find that in the [TypeSafe AI dashboard](https://console.typesafe.ai/keys).
+
+## How to Use
+Once setup, there should be a URL in the terminal that you can click to launch the application in a new browser tab. If not, you can go to the `Ports` tab next to the `Terminal` tab and right click the URL under `Forwarded Address`.
+
+This page will have the fake AI support agent.
+
+To open the employee dashboard, click the "Go to Employee Dashboard" link at the top.
+
+If you enter a chat message that shows frustration or asks to speak with a real person, the application will escalate to a video call. A card will show up in the Employee dashboard with details on the sentiment, frustration level and last message from the user with an `Answer call` button that will add the employee to the video call.

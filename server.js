@@ -117,7 +117,8 @@ app.post('/api/evaluate', async (req, res) => {
       }
     });
 
-    console.log('evaluation: ', evaluation);
+    // console.log('evaluation: ', evaluation);
+    console.dir(evaluation, { depth: null });
 
     const userSentiment = evaluation.answers.sentiment.choice;
     const userSentimentConfidence = evaluation.answers.sentiment.confidence;

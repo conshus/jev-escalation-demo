@@ -1,6 +1,6 @@
 # Vonage Video API x TypeSafe AI Jev demo
 
-This application is intended to showcase to developers a possible usecase of [Vonage Video API](https://developer.vonage.com/en/video/overview?source=video) and [TypeSafe AI](https://typesafe.ai/) to create an AI support agent that quickly detect if a user is getting frustrated and start a video call with a Human agent.
+This application is intended to showcase to developers a possible usecase of [Vonage Video API](https://developer.vonage.com/en/video/overview?source=video) and [TypeSafe AI](https://typesafe.ai/) to create an AI support agent that quickly detects if a user is getting frustrated and start a video call with a Human agent.
 
 ## Features
 

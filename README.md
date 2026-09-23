@@ -29,4 +29,4 @@ This page will have the fake AI support agent.
 
 To open the employee dashboard, click the "Go to Employee Dashboard" link at the top.
 
-If you enter a chat message that shows frustration or asks to speak with a real person, the application will escalate to a video call. A card will show up in the Employee dashboard with details on the sentiment, frustration level and last message from the user with an `Answer call` button that will add the employee to the video call.
+If you enter a chat message that shows frustration or asks to speak with a real person, the application will offer the user the option to start a video call. A card will show up in the Employee dashboard with details on the sentiment, frustration level and last message from the user with an `Answer call` button that will add the employee to the video call.

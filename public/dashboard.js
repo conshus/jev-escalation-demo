@@ -1,10 +1,16 @@
 let applicationId;
 let customerSession;
+let publisher;
+let isAgentAudioMuted = false;
+let isAgentVideoStopped = false;
 
 const dashboardAlerts = document.getElementById('dashboard-alerts');
 const publisherEl = document.getElementById('publisher-container');
 const subscriberEl = document.getElementById('subscriber-container');
 const endCallBtn = document.getElementById('agent-end-call');
+const videoControls = document.getElementById('agent-video-controls');
+const toggleAudioBtn = document.getElementById('agent-toggle-audio');
+const toggleVideoBtn = document.getElementById('agent-toggle-video');
 
 async function initializeDashboard() {
     const res = await fetch('/api/auth/dispatch').then(r => r.json());
@@ -16,6 +22,7 @@ async function initializeDashboard() {
     let dispatchSession = OT.initSession(applicationId, dispatchSessionId);
 
     dispatchSession.on('signal:escalation', (event) => {
+        console.log('Received escalation signal:', event.data);
         const payload = JSON.parse(event.data);
         showEscalationCard(payload);
     });
@@ -81,7 +88,8 @@ window.acceptEscalation = async function (customerId, customerSessionId) {
 
     customerSession.on('streamCreated', (event) => {
         subscriberEl.innerHTML = ''; // Clear waiting text
-        endCallBtn.style.display = 'block'; // Show hangup button when connected
+        videoControls.style.display = 'flex'; // Show video controls when connected
+        // endCallBtn.style.display = 'block'; // Show hangup button when connected
         customerSession.subscribe(event.stream, subscriberEl, {
             insertMode: 'append', width: '100%', height: '100%'
         }, (error) => {
@@ -101,7 +109,7 @@ window.acceptEscalation = async function (customerId, customerSessionId) {
         }
 
         publisherEl.innerHTML = ''; // Clear waiting text
-        const publisher = OT.initPublisher(publisherEl, {
+        publisher = OT.initPublisher(publisherEl, {
             insertMode: 'append', width: '100%', height: '100%'
         }, (pubError) => {
             if (pubError) console.error('Failed to init publisher:', pubError);
@@ -114,6 +122,22 @@ window.acceptEscalation = async function (customerId, customerSessionId) {
     });
 };
 
+
+toggleAudioBtn.addEventListener('click', (e) => {
+    if (!publisher) return;
+    isAgentAudioMuted = !isAgentAudioMuted;
+    publisher.publishAudio(!isAgentAudioMuted);
+    e.target.textContent = isAgentAudioMuted ? "Unmute" : "Mute";
+});
+
+toggleVideoBtn.addEventListener('click', (e) => {
+    if (!publisher) return;
+    isAgentVideoStopped = !isAgentVideoStopped;
+    publisher.publishVideo(!isAgentVideoStopped);
+    e.target.textContent = isAgentVideoStopped ? "Start Camera" : "Stop Camera";
+});
+
+
 // Handle agent clicking the disconnect button
 endCallBtn.addEventListener('click', () => {
     resetVideoStage();
@@ -125,7 +149,14 @@ function resetVideoStage() {
         customerSession.disconnect();
         customerSession = null;
     }
-    endCallBtn.style.display = 'none';
+    // endCallBtn.style.display = 'none';
+    // Reset UI
+    videoControls.style.display = 'none';
+    toggleAudioBtn.textContent = "Mute";
+    toggleVideoBtn.textContent = "Stop Camera";
+    isAgentAudioMuted = false;
+    isAgentVideoStopped = false;
+    publisher = null; // Clear the publisher reference
     subscriberEl.innerHTML = 'Waiting for customer stream...';
     publisherEl.innerHTML = 'Your camera';
 }

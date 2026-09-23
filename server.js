@@ -89,7 +89,8 @@ app.get('/api/auth/customer', async (req, res) => {
 
 // Jev Interception & Escalation Trigger
 app.post('/api/evaluate', async (req, res) => {
-  const { messages, customerId, sessionId } = req.body;
+  // const { messages, customerId, sessionId } = req.body;
+  const { messages } = req.body;
 
   try {
     // Call the System One endpoint
@@ -126,25 +127,34 @@ app.post('/api/evaluate', async (req, res) => {
 
     // 2. The Escalation Threshold
     if (frustrationScore >= 2 || (['frustrated', 'angry'].includes(userSentiment) && userSentimentConfidence > 0.8) || wantsHuman) {
-      const dispatchSessionId = await getDispatchSessionId();
 
-      // Fire the signal into the Global Employee Dispatch Session
-      await vonage.video.sendSignal({
-        type: 'escalation',
-        data: JSON.stringify({
-          customerId,
-          sessionId,
-          sentiment: userSentiment,
-          frustrationLevel: frustrationLevel,
-          lastMessage: messages[messages.length - 1].text
-        })
-      }, dispatchSessionId);
-
-      // Tell the client to halt the local LLM generation
+      let message = `${wantsHuman || ['angry'].includes(userSentiment) ? "I'll connect you to a live agent." : 'It seems like you might need more help than I can offer. Would you like to connect with a live agent?'}`;
       return res.json({
-        action: 'escalated',
-        message: 'Connecting you to a live agent...'
+        action: 'offer_escalation',
+        sentiment: userSentiment,
+        frustrationLevel: frustrationLevel,
+        lastMessage: messages[messages.length - 1].text,
+        message
       });
+      // const dispatchSessionId = await getDispatchSessionId();
+
+      // // Fire the signal into the Global Employee Dispatch Session
+      // await vonage.video.sendSignal({
+      //   type: 'escalation',
+      //   data: JSON.stringify({
+      //     customerId,
+      //     sessionId,
+      //     sentiment: userSentiment,
+      //     frustrationLevel: frustrationLevel,
+      //     lastMessage: messages[messages.length - 1].text
+      //   })
+      // }, dispatchSessionId);
+
+      // // Tell the client to halt the local LLM generation
+      // return res.json({
+      //   action: 'escalated',
+      //   message: 'Connecting you to a live agent...'
+      // });
     }
 
     // 3. Normal Flow
@@ -157,6 +167,24 @@ app.post('/api/evaluate', async (req, res) => {
   }
 });
 
+// Trigger the signal only when the user clicks the opt-in button
+app.post('/api/escalate/trigger', async (req, res) => {
+  const { customerId, sessionId, sentiment, frustrationLevel, lastMessage } = req.body;
+  console.log('Trigger escalation request received: ', req.body);
+  try {
+    const dispatchSessionId = await getDispatchSessionId();
+    console.log('Dispatch session ID obtained: ', dispatchSessionId);
+    await vonage.video.sendSignal({
+      type: 'escalation',
+      data: JSON.stringify({ customerId, sessionId, sentiment, frustrationLevel, lastMessage })
+    }, dispatchSessionId);
+    console.log('Escalation signal sent successfully');
+    res.json({ success: true });
+  } catch (error) {
+    console.log('Error sending escalation signal:', error);
+    res.status(500).json({ error: 'Failed to broadcast escalation signal' });
+  }
+});
 
 // Employee Claims the Call
 app.post('/api/escalate/claim', async (req, res) => {
@@ -167,7 +195,7 @@ app.post('/api/escalate/claim', async (req, res) => {
     await vonage.video.sendSignal({
       type: 'claimed',
       data: JSON.stringify({ customerId })
-    },dispatchSessionId);
+    }, dispatchSessionId);
     res.json({ success: true });
   } catch (error) {
     console.error('Error sending claim signal:', error);

@@ -131,6 +131,17 @@ body {
   font-weight: bold;
 }
 
+.action-container button {
+  background: var(--bubble-bot);
+  color: var(--text-bot);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 1rem;
+  width: 100%;
+}
+
 /* Video Dialog Modal */
 dialog {
   margin: auto;

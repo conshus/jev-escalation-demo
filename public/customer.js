@@ -12,6 +12,12 @@ const videoModal = document.getElementById('video-modal');
 const endCallBtn = document.getElementById('customer-end-call');
 const subscriberEl = document.getElementById('subscriber-container');
 const publisherEl = document.getElementById('publisher-container');
+const videoControls = document.getElementById('video-controls');
+const toggleAudioBtn = document.getElementById('cust-toggle-audio');
+const toggleVideoBtn = document.getElementById('cust-toggle-video');
+
+let isAudioMuted = false;
+let isVideoStopped = false;
 
 // Array to store chat history for Jev state
 let messageHistory = [{ role: 'system', text: 'Hello! How can I help you today?' }];
@@ -48,30 +54,71 @@ chatForm.addEventListener('submit', async (e) => {
   const text = chatInput.value.trim();
   if (!text) return;
 
-  // 1. Show user message
+  // Show user message
   appendMessage('user', text);
   chatInput.value = '';
 
   try {
-    // 2. Intercept: Send full history to Jev via Express
+    // Intercept: Send full history to Jev via Express
     const response = await fetch('/api/evaluate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         messages: messageHistory,
-        customerId: 'user_' + Math.floor(Math.random() * 10000), // Random ID
-        sessionId
+        // customerId: 'user_' + Math.floor(Math.random() * 10000), // Random ID
+        // sessionId
       })
     });
 
     const data = await response.json();
 
-    if (data.action === 'escalated') {
+    // Handle the opt-in offer instead of auto-escalating
+    if (data.action === 'offer_escalation') {
       appendMessage('system', data.message);
-      chatInput.disabled = true;
-      transitionToVideoCall();
-      return;
+      
+      // Inject the opt-in button seamlessly into the chat
+      const actionContainer = document.createElement('div');
+      // actionContainer.style.textAlign = 'center';
+      // actionContainer.style.margin = '10px 0';
+      actionContainer.className = 'action-container';
+      
+      const connectBtn = document.createElement('button');
+      connectBtn.textContent = 'Connect me to an Agent';
+      
+      connectBtn.addEventListener('click', async () => {
+        connectBtn.disabled = true;
+        connectBtn.textContent = 'Alerting our team...';
+        
+        // Fire the signal to the dashboard
+        await fetch('/api/escalate/trigger', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customerId: 'user_' + Math.floor(Math.random() * 10000),
+            sessionId,
+            sentiment: data.sentiment,
+            frustrationLevel: data.frustrationLevel,
+            lastMessage: text
+          })
+        });
+        
+        chatInput.disabled = true;
+        transitionToVideoCall();
+      });
+      
+      actionContainer.appendChild(connectBtn);
+      chatWindow.appendChild(actionContainer);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+      return; 
     }
+
+    // if (data.action === 'escalated') {
+    //   appendMessage('system', data.message);
+    //   chatInput.disabled = true;
+    //   transitionToVideoCall();
+    //   return;
+    // }
+
 
     // 3. Normal Flow: Hand off to WebLLM (Mocked here)
     appendMessage('system', 'Typing...');
@@ -89,6 +136,7 @@ function transitionToVideoCall() {
   // chatInput.disabled = true;
   // chatForm.querySelector('button').disabled = true;
 
+  let subscriber;
   videoModal.showModal();
   session = OT.initSession(applicationId, sessionId);
 
@@ -101,15 +149,17 @@ function transitionToVideoCall() {
     subscriberEl.innerHTML = ''; 
 
     document.getElementById('modal-title').textContent = "Live Support Connected";
-    endCallBtn.style.display = 'block'; // Show hangup button once connected
+    // endCallBtn.style.display = 'block'; // Show hangup button once connected
+    videoControls.style.display = 'flex'; // Show video controls once connected
 
-    session.subscribe(event.stream, subscriberEl, {
+    subscriber = session.subscribe(event.stream, subscriberEl, {
       insertMode: 'append', width: '100%', height: '100%'
     });
   });
 
   // If the agent hangs up, this event fires
   session.on('connectionDestroyed', () => {
+    session.unsubscribe(subscriber);
     endActiveCall('Agent ended the video call.');
   });
 
@@ -137,6 +187,21 @@ async function mockWebLLMResponse(text) {
   });
 }
 
+// Handle customer toggling audio and video
+toggleAudioBtn.addEventListener('click', (e) => {
+  if (!publisher) return;
+  isAudioMuted = !isAudioMuted;
+  publisher.publishAudio(!isAudioMuted);
+  e.target.textContent = isAudioMuted ? "Unmute" : "Mute";
+});
+
+toggleVideoBtn.addEventListener('click', (e) => {
+  if (!publisher) return;
+  isVideoStopped = !isVideoStopped;
+  publisher.publishVideo(!isVideoStopped);
+  e.target.textContent = isVideoStopped ? "Start Camera" : "Stop Camera";
+});
+
 // Handle customer clicking the disconnect button
 endCallBtn.addEventListener('click', () => {
   endActiveCall('You ended the video call.');
@@ -149,7 +214,13 @@ function endActiveCall(systemMessage) {
     session = null;
   }
   videoModal.close();
-  endCallBtn.style.display = 'none';
+  // endCallBtn.style.display = 'none';
+  videoControls.style.display = 'none';
+  toggleAudioBtn.textContent = "Mute";
+  toggleVideoBtn.textContent = "Stop Camera";
+  isAudioMuted = false;
+  isVideoStopped = false;
+  publisher = null; // Clear the publisher reference
   chatInput.disabled = false;
   document.getElementById('modal-title').textContent = "Connecting to a Live Agent...";
   subscriberEl.innerHTML = '';
